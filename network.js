@@ -1568,7 +1568,7 @@ function handleCatchupChain(ws, request, response){
 	}
 	var catchupChain = response;
 	console.log('received catchup chain from '+ws.peer);
-	catchup.processCatchupChain(catchupChain, ws.peer, {
+	catchup.processCatchupChain(catchupChain, ws.peer, request.params.witnesses, {
 		ifError: function(error){
 			bWaitingForCatchupChain = false;
 			sendError(ws, error);
@@ -1875,7 +1875,7 @@ function requestHistoryFor(arrUnits, arrAddresses, onDone){
 				console.log(response.error);
 				return onDone(response.error);
 			}
-			light.processHistory(response, {
+			light.processHistory(response, arrWitnesses, {
 				ifError: function(err){
 					sendError(ws, err);
 					onDone(err);
@@ -2501,7 +2501,7 @@ function handleRequest(ws, tag, command, params){
 					[message_hash, message_string, objDeviceMessage.to],
 					function(){
 						// if the addressee is connected, deliver immediately
-						wss.clients.forEach(function(client){
+						wss.clients.concat(arrOutboundPeers).forEach(function(client){
 							if (client.device_address === objDeviceMessage.to && (!client.max_message_length || message_string.length <= client.max_message_length)) {
 								sendJustsaying(client, 'hub/message', {
 									message_hash: message_hash,
